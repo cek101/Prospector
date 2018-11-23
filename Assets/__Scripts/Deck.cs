@@ -6,23 +6,23 @@ public class Deck : MonoBehaviour {
 
 [Header("Set in Inspector")]
 	//Suits
-	public Sprite suitClub;
-	public Sprite suitDiamond;
-	public Sprite suitHeart;
-	public Sprite suitSpade;
+	public Sprite               suitClub;
+	public Sprite               suitDiamond;
+	public Sprite               suitHeart;
+	public Sprite               suitSpade;
 	
-	public Sprite[] faceSprites;
-	public Sprite[] rankSprites;
+	public Sprite[]             faceSprites;
+	public Sprite[]             rankSprites;
 	
-	public Sprite cardBack;
-	public Sprite cardBackGold;
-	public Sprite cardFront;
-	public Sprite cardFrontGold;
+	public Sprite               cardBack;
+	public Sprite               cardBackGold;
+	public Sprite               cardFront;
+	public Sprite               cardFrontGold;
 	
 	
 	// Prefabs
-	public GameObject prefabSprite;
-	public GameObject prefabCard;
+	public GameObject           prefabSprite;
+	public GameObject           prefabCard;
 
 	[Header("Set Dynamically")]
 
@@ -72,7 +72,7 @@ public class Deck : MonoBehaviour {
 		s += " x=" + xmlr.xml ["xml"] [0] ["decorator"] [0].att ("x");
 		s += " y=" + xmlr.xml ["xml"] [0] ["decorator"] [0].att ("y");
 		s += " scale=" + xmlr.xml ["xml"] [0] ["decorator"] [0].att ("scale");
-		print (s);
+		//print (s);  // comment out this line, since we're done with the test
 		
 		//Read decorators for all cards
 		// these are the small numbers/suits in the corners
@@ -246,7 +246,7 @@ public class Deck : MonoBehaviour {
 			tSR.sortingOrder = 2;
 			tGO.name = "back";
 			card.back = tGO;
-			card.faceUp = false;
+			card.FaceUp = false;
 			
 			cards.Add (card);
 		} // for all the Cardnames	
