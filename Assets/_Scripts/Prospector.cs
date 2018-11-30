@@ -49,7 +49,8 @@ public class Prospector : MonoBehaviour {
         if (go != null) {
             highScoreText = go.GetComponent<Text>();
         }
-        int highScore = "High Score: " + Utils.AddCommasToNumber(highScore);
+        int highScore = ScoreManager.HIGH_SCORE; 
+        string hScore = "High Score: " + Utils.AddCommasToNumber(highScore);
         go.GetComponent<Text>().text = hScore;
 
         // set up the UI texts that show at the end of the round
@@ -84,7 +85,7 @@ public class Prospector : MonoBehaviour {
         layout = GetComponent<Layout>(); // get the layout component
         layout.ReadLayout(layoutXML.text); // pass layout XML to it
         drawPile = ConvertListCardsToListCardProspectors( deck.cards ); // p 670
-        //LayoutGame(); // added in 672
+        LayoutGame(); // added in 672
 	}
     
     List<CardProspector> ConvertListCardsToListCardProspectors (List<Card> lCD) {
@@ -113,6 +114,72 @@ public class Prospector : MonoBehaviour {
             layoutAnchor = tGO.transform; // grab its transform
             layoutAnchor.transform.position = layoutCenter; // position it
         }
+        CardProspector cp;
+        // follow the layout
+        foreach (SlotDef tSD in layout.slotDefs)
+        {
+            // ^ Iterate through all the SLotDefs in the layout.slotDefs as tSD
+            cp = Draw(); // pull a card from the top (beginning) of the draw pile
+            cp.FaceUp = tSD.faceUp; // set its faceUp to the value in SlotDef
+            cp.transform.parent = layoutAnchor; // make its parent layoutAnchor
+            // this replaces the previous parent: deck.deckANchor, which 
+            // appears as _Deck in the Hierarchy when the scene is playing.
+            cp.transform.localPosition = new Vector3(
+                layout.multiplier.x * tSD.x,
+                layout.multiplier.y * tSD.y,
+                -tSD.layerID);
+            // ^ set the localPOsition of the card based on slotDef
+            cp.layoutID = tSD.id;
+            cp.slotDef = tSD;
+            // cardProspectors in the tableau have the state CardState.tableau
+            cp.state = eCardState.tableau;
+            // cardProspectors in the tableau have the state CardState.tableau
+            cp.SetSortingLayerName(tSD.layerName); // Set the sorting layers
+
+            tableau.Add(cp); // add this Card Prospector to the List<> tableau
+        }
+
+        //set which cards are hiding others
+        foreach (CardProspector tCP in tableau) {
+            foreach (int hid in tCP.slotDef.hiddenBy) {
+                cp = FindCardByLayoutID(hid);
+                tCP.hiddenBy.Add(cp);
+            }
+        }
+
+        //set up the initial target card
+        MoveToTarget(Draw());
+
+        // set up the draw pile 
+        UpdateDrawPile();
+    }
+
+    // Convert from the layoutID int to the CardProspector with that ID
+    CardProspector FindCardByLayoutID (int layoutID)    {
+        foreach (CardProspector tCP in tableau) {
+            // search through all cards in the tableau List<>
+            if (tCP.layoutID == layoutID) {
+                // if the card has the sameID, return it
+                return (tCP);
+            }
+        }
+        // if it's not found, return null
+        return (null);
+    }
+
+    // this turns cars in the Mine face-up or face down
+    void SetTableauFaces () {
+        foreach (CardProspector cd in tableau) {
+            bool faceUp = true;  //assume the card will be face-up
+            foreach ( CardProspector cover in cd.hiddenBy) {
+                // if either of the covering cards are in the tableau
+                if (cover.state == eCardState.tableau) {
+                    faceUp = false;
+                }
+            }
+            cd.FaceUp = faceUp; // set the value on the card
+        }
+    }
 
         // moves the current target to the discardPile
         void MoveToDiscard(CardProspector cd) {
@@ -160,10 +227,11 @@ public class Prospector : MonoBehaviour {
 
                 //position it correctly with the layout.drawPile.stagger
                 Vector2 dpStagger = layout.drawPile.stagger;
-                cd.transform.localPosition = new Vector3(
-                    layout.multiplier.x * layout.discardPile.x,
-                    layout.multiplier.y * layout.discardPile.y,
-                    -layout.discardPile.layerID + 0.1f * i);
+
+            cd.transform.localPosition = new Vector3(
+                layout.multiplier.x * (layout.drawPile.x + i * dpStagger.x),
+                    layout.multiplier.y * (layout.drawPile.y+ +i * dpStagger.y), 
+                    - layout.drawPile.layerID + 0.1f * i);
 
                 cd.FaceUp = false;  // make them all face-down
                 cd.state = eCardState.drawpile;
@@ -338,35 +406,6 @@ public class Prospector : MonoBehaviour {
             }   
 
         }
-        CardProspector cp;
-        // follow the layout
-        foreach (SlotDef tSD in layout.slotDefs) {
-            // ^ Iterate through all the SLotDefs in the layout.slotDefs as tSD
-            cp = Draw(); // pull a card from the top (beginning) of the draw pile
-            cp.FaceUp = tSD.faceUp; // set its faceUp to the value in SlotDef
-            cp.transform.parent = layoutAnchor; // make its parent layoutAnchor
-            // this replaces the previous parent: deck.deckANchor, which 
-            // appears as _Deck in the Hierarchy when the scene is playing.
-            cp.transform.localPosition = new Vector3(
-                layout.multiplier.x * tSD.x,
-                layout.multiplier.y * tSD.y,
-                -tSD.layerID);
-            // ^ set the localPOsition of the card based on slotDef
-            cp.layoutID = tSD.id;
-            cp.slotDef = tSD;
-            // cardProspectors in the tableau have the state CardState.tableau
-            cp.state = eCardState.tableau;
-            // cardProspectors in the tableau have the state CardState.tableau
-            cp.SetSortingLayerName(tSD.layerName); // Set the sorting layers
-
-            tableau.Add(cp); // add this Card Prospector to the List<> tableau
-        }
-        //set up the initial target card
-        MoveToTarget(Draw());
-
-        // set up the draw pile 
-        UpdateDrawPile();
-
-    }
+        
     
 }

@@ -56,6 +56,7 @@ public class Layout : MonoBehaviour {
             // various attributes are parsed into numerical values
             tSD.x = float.Parse(slotsX[i].att("x"));
             tSD.y = float.Parse(slotsX[i].att("y"));
+            tSD.layerID = int.Parse( slotsX[i].att("layer"));
             // this converts the number of the layerID into a text laykerName
             tSD.layerName = sortingLayerNames[tSD.layerID];
 
@@ -67,7 +68,7 @@ public class Layout : MonoBehaviour {
                     if (slotsX[i].HasAtt("hiddenby")) {
                         string[] hiding = slotsX[i].att("hiddenby").Split(',');
                         foreach (string s in hiding) { 
-                        tSD.hiddenBy.Add(int.Parse(s));
+                            tSD.hiddenBy.Add(int.Parse(s));
                         }
                     }
                     slotDefs.Add(tSD);
